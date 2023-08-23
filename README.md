@@ -104,7 +104,7 @@ The file stores all contents bundled in a json format:
                 "html": "HTML_FILE_CONTENTS",
                 "css": "CSS_FILE_CONTENTS",
                 "js": "JS_FILE_CONTENTS",
-                "SVG": "SVG_FILE_CONTENTS"
+                "svg": "SVG_FILE_CONTENTS"
             }
         }
         ...
@@ -114,7 +114,9 @@ The file stores all contents bundled in a json format:
         {
             "nodeName": "Test Node",
             "nodeID": "Test",
-            "fileContents": "JS_FILE_CONTENTS"
+            "fileContents": {
+                "js": "JS_FILE_CONTENTS"
+             }
         }
         ...
     ]
