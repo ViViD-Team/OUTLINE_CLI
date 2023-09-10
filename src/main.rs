@@ -2,66 +2,50 @@ use std::env;
 use std::fs;
 use std::path::Path;
 
+use opc::Command;
+use opc::RawCommand;
 use opc::sample_files;
 
 fn main() {
 
     let version = "0.1";
 
-    let mut args = env::args().into_iter();
+    let mut args = env::args();
 
     args.next();
 
-    let command = args.next();
+    let command = opc::Command::new(args);
 
-    if command.is_none() {
-        println!("OUTLINE Plugin Creator version {} installed", version);
+    if let Err(e) = command {
+        println!("{}", e);
         return;
     }
 
     let command = command.unwrap();
 
-    println!("{}", match command.clone().as_str() {
-        "create" | "c" => {
-            let arg = args.next();
-            
-            if arg.is_none() {
-                "Please provide a name in lowerCamelCase for your plugin".to_string()
-            } else if let Some(option) = args.next() {
-                if option == "-blank" {
-                    create_plugin_blank(&arg.unwrap())
-                } else {
-                    "Invalid option. Only '-blank' available".to_string()
-                }
+    println!("{}", match command {
+        Command::Create(c) => {
+            if c.blank {
+                create_plugin_blank(&c.name)
             } else {
-                create_plugin(&arg.unwrap())
+                create_plugin(&c.name)
             }
         }
-        "add" | "a" => {
-            if let Some(elem_type) = args.next() {
-                let name = args.next();
-                if name.is_none() {"Missing element name.".to_string()}
-                else if elem_type == "widget" {
-                    add_widget(name.unwrap())
-                } else if elem_type == "node" {
-                    add_node(name.unwrap())
-                } else {
-                    "Invalid argument: element type.\nAvailable types are\n     widget\n     node".to_string()
-                }
-            } else {
-                "Missing argument: element type.\nAvailable types are\n     widget\n     node".to_string()
+        Command::AddNode(c) => add_node(c.name),
+        Command::AddWidget(c) => add_widget(c.name),
+        Command::Bundle => bundle(),
+        Command::Extract(c) => extract_from(c.origin_path),
+        Command::Help(c) => {
+            match c {
+                RawCommand::Add => unimplemented!(""),
+                RawCommand::Bundle => unimplemented!(""),
+                RawCommand::Version => unimplemented!(""),
+                RawCommand::Help => unimplemented!(""),
+                RawCommand::Create => unimplemented!(""),
+                RawCommand::Extract => unimplemented!(""),
             }
         }
-        "bundle" | "b" => {
-            "bundle".to_string()
-        }
-        "extract" | "e" => {
-            "extract".to_string()
-        }
-        "help" => {
-            "help command".to_string()
-        }
-        _ => {
+        Command::Manual => {
             "
 OUTLINE's plugin creator
 
@@ -77,6 +61,9 @@ Running opc without any arguments will print version info and exit.
 
 See 'opc help <command>' for more information on a specific command.
             ".to_string()
+        }
+        Command::Version => {
+            format!("OUTLINE Plugin Creator {} installed", version)
         }
     })
 }
@@ -152,10 +139,20 @@ fn create_plugin_blank(name: &str) -> String {
 
 pub fn add_widget(name: String) -> String {
 
-    "add widget".to_string()
+    unimplemented!("")
 }
 
 pub fn add_node(name: String) -> String {
 
-    "add node".to_string()
+    unimplemented!("")
+}
+
+pub fn bundle() -> String {
+
+    unimplemented!("")
+}
+
+pub fn extract_from(origin_path: String) -> String {
+
+    unimplemented!("")
 }
