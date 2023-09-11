@@ -121,6 +121,8 @@ fn create_plugin_blank(name: &str) -> String {
 
     settings.plugin_id = name.clone();
     settings.plugin_name = split_l_camel_case(&name);
+    settings.widgets = Vec::new();
+    settings.nodes = Vec::new();
 
     fs::write(name.clone() + "/plugin.json", serde_json::to_string_pretty(&settings).expect("Error serializing settings")).expect("Error creating new file");
 
