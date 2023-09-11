@@ -68,7 +68,7 @@ impl Command {
             }
         });
         if let Command::Create(b) = c.clone() {
-            if b.name == "" {bail!("missing plugin name")}
+            if b.name.is_empty() {bail!("missing plugin name")}
         }
         Ok(c)
     }
@@ -157,16 +157,18 @@ impl Opb {
         let mut widgets: Vec<FullWidget> = Vec::new();
         let mut nodes: Vec<FullNode> = Vec::new();
 
+        
         for widget in settings.widgets {
+            let path = widget.widget_id.clone() + "/" + &widget.widget_id;
             widgets.push(FullWidget {
                 widget_name: widget.widget_name,
                 widget_id: widget.widget_id.clone(),
                 prototype: widget.prototype,
                 file_contents: WidgetFiles {
-                    html: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".html"),
-                    css: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".css"),
-                    js: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".js"),
-                    svg: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".svg")
+                    html: read_to_string(path.clone() + ".html"),
+                    css: read_to_string(path.clone() + ".css"),
+                    js: read_to_string(path.clone() + ".js"),
+                    svg: read_to_string(path + ".svg")
                 }
             });
         }
@@ -216,8 +218,8 @@ pub struct PluginJson {
     pub nodes: Vec<Node>,
 }
 
-impl PluginJson {
-    pub fn new() -> PluginJson {
+impl Default for PluginJson {
+    fn default() -> Self {
         PluginJson {
             plugin_name: "Plugin Name".to_string(),
             plugin_id: "Plugin ID".to_string(),

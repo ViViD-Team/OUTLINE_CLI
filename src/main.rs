@@ -91,12 +91,9 @@ fn create_plugin(name: &str) -> String {
     fs::write(path.clone() + "/sampleWidget.css", sample_files::get_sample_widget_css()).expect("Error creating new file");
     fs::write(path.clone() + "/sampleWidget.html", sample_files::get_sample_widget_html()).expect("Error creating new file");
     fs::write(path.clone() + "/sampleWidget.js", sample_files::get_sample_widget_js()).expect("Error creating new file");
-    fs::write(path.clone() + "/sampleWidget.svg", sample_files::get_sample_widget_svg()).expect("Error creating new file");
+    fs::write(path + "/sampleWidget.svg", sample_files::get_sample_widget_svg()).expect("Error creating new file");
 
-    let mut settings = PluginJson::new();
-
-    settings.plugin_id = name.clone();
-    let mut plugin_name: Vec<String> = name.clone().chars().into_iter().map(|a| {
+    let mut plugin_name: Vec<String> = name.chars().map(|a| {
         if a.is_ascii_uppercase() {
             " ".to_string() + &a.to_string()
         } else {
@@ -106,7 +103,11 @@ fn create_plugin(name: &str) -> String {
 
     plugin_name[0] = plugin_name[0].to_ascii_uppercase();
 
-    settings.plugin_name = plugin_name.into_iter().collect();
+    let settings = PluginJson {
+        plugin_id: name.clone(),
+        plugin_name: plugin_name.into_iter().collect(),
+        ..Default::default()
+    };
 
     fs::write(name.clone() + "/plugin.json", serde_json::to_string_pretty(&settings).expect("Error serializing settings")).expect("Error creating new file");
     
@@ -120,12 +121,13 @@ fn create_plugin_blank(name: &str) -> String {
 
     fs::create_dir(&name).expect("Error creating new directory");
 
-    let mut settings = PluginJson::new();
-
-    settings.plugin_id = name.clone();
-    settings.plugin_name = split_l_camel_case(&name);
-    settings.widgets = Vec::new();
-    settings.nodes = Vec::new();
+    let settings: PluginJson = PluginJson {
+        plugin_name: name.clone(),
+        plugin_id: split_l_camel_case(&name),
+        widgets: Vec::new(),
+        nodes: Vec::new(),
+        ..Default::default()
+    };
 
     fs::write(name.clone() + "/plugin.json", serde_json::to_string_pretty(&settings).expect("Error serializing settings")).expect("Error creating new file");
 
@@ -243,7 +245,7 @@ pub fn extract_from(origin_path: String) -> String {
 
 fn split_l_camel_case(s: &str) -> String {
 
-    let mut s: Vec<String> = s.to_string().chars().into_iter().map(|a| {
+    let mut s: Vec<String> = s.to_string().chars().map(|a| {
         if a.is_ascii_uppercase() {
             " ".to_string() + &a.to_string()
         } else {
