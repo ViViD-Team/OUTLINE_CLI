@@ -208,7 +208,7 @@ impl Opb {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IconFileContents {
-    svg: String
+    pub svg: String
 }
 
 pub fn read_to_string(path: String) -> String {

@@ -195,9 +195,9 @@ pub fn bundle() -> String {
         return format!("{}", e)
     }
 
-    fs::write(settings.plugin_id.clone() + ".obp", serde_json::to_string(&res.unwrap()).expect("Error serializing bundle")).expect("Error writing to file");
+    fs::write("../".to_string() + &settings.plugin_id + ".opb", serde_json::to_string(&res.unwrap()).expect("Error serializing bundle")).expect("Error writing to file");
 
-    format!("Plugin bundled to {}.obp", settings.plugin_id)
+    format!("Plugin bundled to {}.opb", settings.plugin_id)
 }
 
 pub fn extract_from(origin_path: String) -> String {
@@ -212,11 +212,26 @@ pub fn extract_from(origin_path: String) -> String {
     let opb: Opb = serde_json::from_str(&fs::read_to_string(&origin_path).expect("Error reading file")).expect("Error deserializing bundle");
     let plugin: PluginJson = serde_json::from_str(&fs::read_to_string(&origin_path).expect("Error reading file")).expect("Error deserializing bundle");
 
+    fs::create_dir(&plugin.plugin_id).expect("A subdirectory with this name already exists");
 
+    fs::write(plugin.plugin_id.clone() + "/plugin.json", serde_json::to_string_pretty(&plugin).expect("Error serializing plugin.json")).expect("Error writing to file");
 
+    fs::write(plugin.plugin_id.clone() + "/icon.svg", opb.icon.svg).expect("Error writing to file");
 
+    for node in opb.nodes {
+        fs::write(plugin.plugin_id.clone() + "/" + &node.node_id + ".js", node.js.js).expect("Error writing to file");
+    }
 
-    "asd".to_string()
+    for widget in opb.widgets {
+        fs::create_dir(plugin.plugin_id.clone() + "/" + &widget.widget_id).expect("Error creating directory");
+        let path = plugin.plugin_id.clone() + "/" + &widget.widget_id + "/" + &widget.widget_id;
+        fs::write(path.clone() + ".js", widget.file_contents.js).expect("Error writing to file");
+        fs::write(path.clone() + ".css", widget.file_contents.css).expect("Error writing to file");
+        fs::write(path.clone() + ".html", widget.file_contents.html).expect("Error writing to file");
+        fs::write(path.clone() + ".svg", widget.file_contents.svg).expect("Error writing to file");
+    }
+
+    format!("Extracted plugin {}", opb.plugin_id)
 }
 
 
