@@ -126,6 +126,7 @@ The file stores all contents bundled in a json format:
     }
 }
 ```
+Outputs "Plugin bundled to *pluginID*.obp".
 
 #### Possible errors
 - Not currently inside a plugin
