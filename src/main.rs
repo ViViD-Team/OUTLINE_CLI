@@ -2,12 +2,15 @@ use std::env;
 use std::fs;
 use std::path::Path;
 
-use opc::Command;
-use opc::RawCommand;
+use opc::models::Command;
+use opc::models::Node;
+use opc::models::Opb;
+use opc::models::PluginJson;
+use opc::models::Prototype;
+use opc::models::RawCommand;
+use opc::models::Widget;
 use opc::sample_files;
 use opc::inside_plugin;
-use opc::Opb;
-use opc::sample_files::PluginJson;
 
 fn main() {
 
@@ -17,7 +20,7 @@ fn main() {
 
     args.next();
 
-    let command = opc::Command::new(args);
+    let command = Command::new(args);
 
     if let Err(e) = command {
         println!("{}", e);
@@ -90,7 +93,7 @@ fn create_plugin(name: &str) -> String {
     fs::write(path.clone() + "/sampleWidget.js", sample_files::get_sample_widget_js()).expect("Error creating new file");
     fs::write(path.clone() + "/sampleWidget.svg", sample_files::get_sample_widget_svg()).expect("Error creating new file");
 
-    let mut settings = sample_files::get_plugin_json();
+    let mut settings = PluginJson::new();
 
     settings.plugin_id = name.clone();
     let mut plugin_name: Vec<String> = name.clone().chars().into_iter().map(|a| {
@@ -117,7 +120,7 @@ fn create_plugin_blank(name: &str) -> String {
 
     fs::create_dir(&name).expect("Error creating new directory");
 
-    let mut settings = sample_files::get_plugin_json();
+    let mut settings = PluginJson::new();
 
     settings.plugin_id = name.clone();
     settings.plugin_name = split_l_camel_case(&name);
@@ -146,11 +149,11 @@ pub fn add_widget(name: String) -> String {
     fs::write(name.clone() + "/" + &name + ".js", sample_files::get_widget_js(&name)).expect("Error creating new file");
     fs::write(name.clone() + "/" + &name + ".svg", "").expect("Error creating new file");
 
-    let mut settings: sample_files::PluginJson = serde_json::from_str(
+    let mut settings: PluginJson = serde_json::from_str(
         &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
     ).expect("Error deserializing plugin.json");
 
-    settings.widgets.push(sample_files::Widget { widget_name: split_l_camel_case(&name), widget_id: name.clone(), prototype: sample_files::Prototype::default() });
+    settings.widgets.push(Widget { widget_name: split_l_camel_case(&name), widget_id: name.clone(), prototype: Prototype::default() });
 
     fs::write("plugin.json", serde_json::to_string_pretty(&settings).unwrap()).expect("Error editing plugin.json");
 
@@ -170,11 +173,11 @@ pub fn add_node(name: String) -> String {
 
     fs::write(name.clone() + ".js", sample_files::get_sample_node_js(Some(name.clone()))).expect("Error creating new file");
 
-    let mut settings: sample_files::PluginJson = serde_json::from_str(
+    let mut settings: PluginJson = serde_json::from_str(
         &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
     ).expect("Error deserializing plugin.json");
 
-    settings.nodes.push(sample_files::Node { node_name: split_l_camel_case(&name), node_id: name.clone() });
+    settings.nodes.push(Node { node_name: split_l_camel_case(&name), node_id: name.clone() });
 
     fs::write("plugin.json", serde_json::to_string_pretty(&settings).unwrap()).expect("Error editing plugin.json");
 
@@ -187,7 +190,7 @@ pub fn bundle() -> String {
         return "You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.".to_string()
     }
 
-    let settings: sample_files::PluginJson = serde_json::from_str(
+    let settings: PluginJson = serde_json::from_str(
         &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
     ).expect("Error deserializing plugin.json");
 
