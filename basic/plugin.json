@@ -1,36 +1,38 @@
 {
-    "pluginName": "Plugin Name",
-    "pluginID": "pluginName",
-    "pluginDescription": "Plugin Description",
-    "pluginVersion": "1.0.0",
-    "pluginAuthor": "Plugin Author",
-    
-    "pluginCategoryLabel": "Category Label",
-    
-    "widgets": [
-        {
-            "widgetName": "Sample Widget",
-            "widgetID": "sampleWidget",
-            "prototype": {
-                "posX": 0,
-                "posY": 0,
-                "sizeX": 8,
-                "sizeY": 8,
-                "simX": 0,
-                "simY": 0,
-                "simResizeX": 0,
-                "simResizeY": 0,
-                "sizeBounds": [],
-
-                "count": 0
-            }
+  "pluginName": "Plugin Name",
+  "pluginID": "pluginName",
+  "pluginDescription": "Plugin Description",
+  "pluginVersion": "1.0.0",
+  "pluginAuthor": "Plugin Author",
+  "pluginCategoryLabel": "Category Label",
+  "widgets": [
+    {
+      "widgetName": "Sample Widget",
+      "widgetID": "sampleWidget",
+      "prototype": {
+        "posX": 0.0,
+        "posY": 0.0,
+        "sizeX": 8.0,
+        "sizeY": 8.0,
+        "simX": 0.0,
+        "simY": 0.0,
+        "simResizeX": 0.0,
+        "simResizeY": 0.0,
+        "sizeBounds": [],
+        "params": {
+          "count": 0
         }
-    ],
-
-    "nodes": [
-        {
-            "nodeName": "Test Node",
-            "nodeID": "Test"
-        }
-    ]
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "nodeName": "Hello World",
+      "nodeID": "helloWorld"
+    },
+    {
+      "nodeName": "Hello You",
+      "nodeID": "helloYou"
+    }
+  ]
 }

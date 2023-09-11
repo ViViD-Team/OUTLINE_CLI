@@ -1,4 +1,10 @@
-use anyhow::{Result, anyhow};
+use std::{path::Path, fs};
+
+use anyhow::{Result, anyhow, bail};
+use sample_files::{FullWidget, FullNode};
+use serde::{Serialize, Deserialize};
+
+use crate::sample_files::{WidgetFiles, NodeFiles};
 
 pub mod sample_files;
 
@@ -43,7 +49,6 @@ pub enum Command {
     AddWidget(AddWidget),
     Bundle,
     Extract(Extract),
-    Manual
 }
 
 impl Command {
@@ -130,4 +135,88 @@ pub struct AddWidget {
 #[derive(Debug, Clone)]
 pub struct Extract {
     pub origin_path: String
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Opb {
+    #[serde(rename = "pluginName")]
+    pub plugin_name: String,
+    #[serde(rename = "pluginID")]
+    pub plugin_id: String,
+    #[serde(rename = "pluginDescription")]
+    pub plugin_description: String,
+    #[serde(rename = "pluginVersion")]
+    pub plugin_version: String,
+    #[serde(rename = "pluginAuthor")]
+    pub plugin_author: String,
+    #[serde(rename = "pluginCategoryLabel")]
+    pub plugin_category_label: String,
+    pub widgets: Vec<FullWidget>,
+    pub nodes: Vec<FullNode>,
+    pub icon: IconFileContents
+}
+
+impl Opb {
+    pub fn bundle() -> Result<Self> {
+
+        if !inside_plugin() {
+            bail!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
+        }
+
+        let settings: sample_files::PluginJson = serde_json::from_str(
+            &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
+        ).expect("Error deserializing plugin.json");
+
+        let mut widgets: Vec<FullWidget> = Vec::new();
+        let mut nodes: Vec<FullNode> = Vec::new();
+
+        for widget in settings.widgets {
+            widgets.push(FullWidget {
+                widget_name: widget.widget_name,
+                widget_id: widget.widget_id.clone(),
+                prototype: widget.prototype,
+                file_contents: WidgetFiles {
+                    html: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".html"),
+                    css: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".css"),
+                    js: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".js"),
+                    svg: read_to_string(widget.widget_id.clone() + "/" + &widget.widget_id + ".svg")
+                }
+            });
+        }
+
+        for node in settings.nodes {
+            nodes.push(FullNode {
+                node_name: node.node_name,
+                node_id: node.node_id.clone(),
+                js: NodeFiles { js: read_to_string(node.node_id.clone() + ".js") }
+            });
+        }
+
+        Ok(Opb {
+            plugin_name: settings.plugin_name,
+            plugin_id: settings.plugin_id,
+            plugin_description: settings.plugin_description,
+            plugin_version: settings.plugin_version,
+            plugin_author: settings.plugin_author,
+            plugin_category_label: settings.plugin_category_label,
+            widgets,
+            nodes,
+            icon: IconFileContents { svg: read_to_string("icon.svg".to_string()) }
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IconFileContents {
+    svg: String
+}
+
+pub fn read_to_string(path: String) -> String {
+
+    fs::read_to_string(&path).expect(&format!("Error reading file {}", path))
+}
+
+pub fn inside_plugin() -> bool {
+
+    Path::new("plugin.json").exists()
 }
