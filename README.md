@@ -119,7 +119,11 @@ The file stores all contents bundled in a json format:
              }
         }
         ...
-    ]
+    ],
+
+    "icon": {
+        "fileContents": "SVG_FILE_CONTENTS"
+    }
 }
 ```
 
