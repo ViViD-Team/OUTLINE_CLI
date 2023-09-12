@@ -223,7 +223,7 @@ pub fn bundle() -> String {
 
 pub fn extract_from(origin_path: String) -> String {
 
-    let origin_path = origin_path.clone() + ".opb";
+    let origin_path = origin_path + ".opb";
 
     if !Path::new(&origin_path).exists() {
         return "File not found".to_string()
