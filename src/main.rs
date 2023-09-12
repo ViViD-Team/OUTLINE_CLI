@@ -2,7 +2,9 @@ use std::env;
 use std::fs;
 use std::path::Path;
 
+use opc::get_settings;
 use opc::models::Command;
+use opc::models::Element;
 use opc::models::Node;
 use opc::models::Opb;
 use opc::models::PluginJson;
@@ -11,6 +13,7 @@ use opc::models::RawCommand;
 use opc::models::Widget;
 use opc::sample_files;
 use opc::inside_plugin;
+use opc::set_settings;
 
 fn main() {
 
@@ -37,10 +40,15 @@ fn main() {
                 create_plugin(&c.name)
             }
         }
-        Command::AddNode(c) => add_node(c.name),
-        Command::AddWidget(c) => add_widget(c.name),
+        Command::Add(c) => {
+            match c {
+                Element::Node(name) => add_node(name),
+                Element::Widget(name) => add_widget(name),
+            }
+        },
         Command::Bundle => bundle(),
         Command::Extract(c) => extract_from(c.origin_path),
+        Command::Remove(p) => remove_element(p), 
         Command::Help(c) => {
             match c {
                 RawCommand::Add => "Adds a new widget or node to the plugin.\nUsage: opc add [ELEMENT TPYE] [ELEMENT NAME]".to_string(),
@@ -54,7 +62,7 @@ Commands:
     create, c       Create the basic filtree for a new outline plugin
     add, a          Add a new element to the plugin
     bundle, b       Bundle the plugin to .opb file
-    extract, e      Debundle a .opb file
+    extract, e      Unbundle a .opb file
 
 Running opc without any arguments will print version info and exit.
 
@@ -63,6 +71,7 @@ See 'opc help <command>' for more information on a specific command.
                 RawCommand::Help => "Display additional information for specific commands.\nUsage: opc help [COMMAND]".to_string(),
                 RawCommand::Create => "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create [PLUGIN NAME] [-blank]".to_string(),
                 RawCommand::Extract => "Extract a .opb file to the corresponding source files.\nUsage: opc extract [FILE PATH]".to_string(),
+                RawCommand::Remove => "Remove a OUTLINE plugin at the given path. \nUsage: opc delete [PLUGIN PATH]".to_string()
             }
         }
         Command::Version => {
@@ -71,6 +80,23 @@ See 'opc help <command>' for more information on a specific command.
     })
 }
 
+fn remove_element(elem: Element) -> String {
+
+    match elem {
+        Element::Node(name) => {
+            let mut settings = get_settings();
+            settings.remove_node(name.clone()).expect("Error removing Node");
+            fs::remove_file(name.clone() + ".js").expect("Node file not found, removed Node from plugin.json");
+            format!("Deleted Node {}", &name)
+        }
+        Element::Widget(name) => {
+            let mut settings = get_settings();
+            settings.remove_widget(name.clone()).expect("Error removing Widget");
+            fs::remove_dir_all(&name).expect("Widget directory not found, removed Widget from plugin.json");
+            format!("Deleted Widget {}", name)
+        }
+    }
+}
 
 fn create_plugin(name: &str) -> String {
 
@@ -136,9 +162,7 @@ fn create_plugin_blank(name: &str) -> String {
 
 pub fn add_widget(name: String) -> String {
 
-    if !inside_plugin() {
-        return "You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.".to_string()
-    }
+    inside_plugin!(no_res);
 
     if Path::new(&name).exists() {
         return "Widget with this ID already exists in this plugin!".to_string()
@@ -151,22 +175,18 @@ pub fn add_widget(name: String) -> String {
     fs::write(name.clone() + "/" + &name + ".js", sample_files::get_widget_js(&name)).expect("Error creating new file");
     fs::write(name.clone() + "/" + &name + ".svg", "").expect("Error creating new file");
 
-    let mut settings: PluginJson = serde_json::from_str(
-        &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
-    ).expect("Error deserializing plugin.json");
+    let mut settings: PluginJson = get_settings();
 
     settings.widgets.push(Widget { widget_name: split_l_camel_case(&name), widget_id: name.clone(), prototype: Prototype::default() });
 
-    fs::write("plugin.json", serde_json::to_string_pretty(&settings).unwrap()).expect("Error editing plugin.json");
+    set_settings(&settings);
 
     format!("Generated {} widget. Make sure to customize the plugin.json!", name)
 }
 
 pub fn add_node(name: String) -> String {
 
-    if !inside_plugin() {
-        return "You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.".to_string()
-    }
+    inside_plugin!(no_res);
 
     // Maybe rather check plugin.json?
     if Path::new(&(name.clone() + ".js")).exists() {
@@ -175,26 +195,20 @@ pub fn add_node(name: String) -> String {
 
     fs::write(name.clone() + ".js", sample_files::get_sample_node_js(Some(name.clone()))).expect("Error creating new file");
 
-    let mut settings: PluginJson = serde_json::from_str(
-        &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
-    ).expect("Error deserializing plugin.json");
+    let mut settings: PluginJson = get_settings();
 
     settings.nodes.push(Node { node_name: split_l_camel_case(&name), node_id: name.clone() });
 
-    fs::write("plugin.json", serde_json::to_string_pretty(&settings).unwrap()).expect("Error editing plugin.json");
+    set_settings(&settings);
 
     format!("Generated {} node. Make sure to customize the plugin.json", name)
 }
 
 pub fn bundle() -> String {
 
-    if !inside_plugin() {
-        return "You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.".to_string()
-    }
+    inside_plugin!(no_res);
 
-    let settings: PluginJson = serde_json::from_str(
-        &fs::read_to_string("plugin.json").expect("Error reading plugin.json")
-    ).expect("Error deserializing plugin.json");
+    let settings: PluginJson = get_settings();
 
     let res = Opb::bundle();
 
@@ -209,9 +223,8 @@ pub fn bundle() -> String {
 
 pub fn extract_from(origin_path: String) -> String {
 
-    if !origin_path.ends_with(".opb") {
-        return "Wrong file format. Please provide a .opb file.".to_string()
-    }
+    let origin_path = origin_path.clone() + ".opb";
+
     if !Path::new(&origin_path).exists() {
         return "File not found".to_string()
     }

@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow, bail};
 use serde::{Serialize, Deserialize};
 use serde_json::{Value, Map};
 
-use crate::{inside_plugin, read_to_string};
+use crate::{inside_plugin, read_to_string, get_settings, set_settings};
 
 #[derive(Debug, Clone)]
 pub enum RawCommand {
@@ -11,7 +11,8 @@ pub enum RawCommand {
     Create,
     Add,
     Bundle,
-    Extract
+    Extract,
+    Remove
 }
 
 impl RawCommand {
@@ -26,9 +27,16 @@ impl RawCommand {
             "extract" => Ok(RawCommand::Extract),
             "help" => Ok(RawCommand::Help),
             "version" => Ok(RawCommand::Version),
+            "remove" => Ok(RawCommand::Remove),
             _ => Err(anyhow!("invalid command"))
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum Element {
+    Node(String),
+    Widget(String)
 }
 
 
@@ -37,10 +45,29 @@ pub enum Command {
     Version,
     Help(RawCommand),
     Create(Create),
-    AddNode(AddNode),
-    AddWidget(AddWidget),
+    Add(Element),
     Bundle,
     Extract(Extract),
+    Remove(Element),
+}
+
+macro_rules! build_element_with_name {
+    ($cmd:ident, $args:expr, $($elem_type:ident),+) => {
+        if let Some(elem_type) = $args.next() {
+            if let Some(name) = $args.next() {
+                $(
+                    if elem_type == stringify!($elem_type).to_ascii_lowercase() {
+                        return Ok(Command::$cmd(Element::$elem_type(name)))
+                    }
+                )*
+                bail!("invalid element type")
+            } else {
+                bail!("missing element name");
+            }
+        } else {
+            bail!("missing element type");
+        }
+    }
 }
 
 impl Command {
@@ -53,20 +80,21 @@ impl Command {
             RawCommand::Extract => Command::build_extract(&mut args),
             RawCommand::Version => Ok(Command::Version),
             RawCommand::Help => Ok(Command::Help(RawCommand::new(&mut args)?)),
+            RawCommand::Remove => Command::build_remove(&mut args),
         }
     }
 
+    pub fn build_remove(args: &mut std::env::Args) -> Result<Command> {
+
+        inside_plugin!();
+
+        build_element_with_name!(Remove, args, Widget, Node);
+    } 
+
     pub fn build_create(args: &mut std::env::Args) -> Result<Command> {
 
-        let c = Command::Create(Create {
-            name: args.next().unwrap_or("".to_string()),
-            blank: {
-                if let Some(option) = args.next() {
-                    if option == "-blank" {true}
-                    else {bail!("invalid option")}
-                } else {false}
-            }
-        });
+        let c: Command = {|| -> Result<Command> {build_element_with_name!(Add, args, Widget, Node)}}()?;
+
         if let Command::Create(b) = c.clone() {
             if b.name.is_empty() {bail!("missing plugin name")}
         }
@@ -79,10 +107,10 @@ impl Command {
             if let Some(name) = args.next() {
                 match elem_type.as_str() {
                     "widget" => {
-                        Ok(Command::AddWidget(AddWidget { name }))
+                        Ok(Command::Add(Element::Widget(name)))
                     }
                     "node" => {
-                        Ok(Command::AddNode(AddNode { name }))
+                        Ok(Command::Add(Element::Node(name)))
                     }
                     _ => {bail!("invalid element type")}
                 }
@@ -146,17 +174,12 @@ pub struct Opb {
 impl Opb {
     pub fn bundle() -> Result<Self> {
 
-        if !inside_plugin() {
-            bail!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
-        }
+        inside_plugin!();
 
-        let settings: PluginJson = serde_json::from_str(
-            &read_to_string("plugin.json".to_string())
-        ).expect("Error deserializing plugin.json");
+        let settings = get_settings();
 
         let mut widgets: Vec<FullWidget> = Vec::new();
         let mut nodes: Vec<FullNode> = Vec::new();
-
         
         for widget in settings.widgets {
             let path = widget.widget_id.clone() + "/" + &widget.widget_id;
@@ -240,6 +263,23 @@ impl Default for PluginJson {
     }
 }
 
+impl PluginJson {
+    pub fn remove_node(&mut self, id: String) -> Result<()> {
+
+        let ind = self.nodes.iter().position(|node| node.node_id == id).ok_or(anyhow!("Node not found"))?;
+        self.nodes.remove(ind);
+        set_settings(self);
+        Ok(())
+    }
+    pub fn remove_widget(&mut self, id: String) -> Result<()> {
+
+        let ind = self.widgets.iter().position(|widget| widget.widget_id == id).ok_or(anyhow!("Widget not found"))?;
+        self.widgets.remove(ind);
+        set_settings(self);
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Widget {
     #[serde(rename = "widgetName")]
@@ -308,7 +348,7 @@ impl Default for Prototype {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Node {
     #[serde(rename = "nodeName")]
     pub node_name: String,
