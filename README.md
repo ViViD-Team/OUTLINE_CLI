@@ -55,7 +55,7 @@ Outputs "Generated *widgetName* widget. Make sure to customize the plugin.json".
 Adds another node to the plugin. The provided name is to be treated as the ID.
 
 - Generates *nodeName*.js
-- The new widget is pushed to plugin.json > nodes
+- The new node is pushed to plugin.json > nodes
     - The ID is set to the provided ID
     - The Name is set to the ID but wordsplit and capitalized
 
@@ -66,6 +66,32 @@ Outputs "Generated *nodeName* node. Make sure to customize the plugin.json".
     - Output "You are not currently editing a plugin!"
 - Node with the same ID already exists
     - Output "Node with the same ID already exists in this plugin!"
+
+### opc remove widget *widgetName*
+Removes a widget from the plugin. The provided name is to be treated as the ID.
+
+- Deletes ./*widgetName*/
+- The widget is removed from plugin.json > widgets
+
+Outputs "Deleted widget *widgetName*".
+
+#### Possible errors
+- Not currently inside a plugin
+- plugin.json entry is missing
+- Source folder is not found
+
+### opc remove node *nodeName*
+Removes a node from the plugin. The provided name is to be treated as the ID.
+
+- Deletes *nodeName*.js
+- The node is removed from plugin.json > nodes
+
+Outputs "Deleted node *nodeName*".
+
+#### Possible errors
+- Not currently inside a plugin
+- plugin.json entry is missing
+- Source file is not found
 
 
 ### opc bundle

@@ -59,10 +59,11 @@ OUTLINE's plugin creator
 Usage: opc [COMMAND] [ARGUMENTS] [OPTIONS]
 
 Commands:
-    create, c       Create the basic filtree for a new outline plugin
-    add, a          Add a new element to the plugin
-    bundle, b       Bundle the plugin to .opb file
-    extract, e      Unbundle a .opb file
+    create          Create the basic filtree for a new outline plugin
+    add             Add a new element to the plugin
+    remove          Remove an element from the plugin
+    bundle          Bundle the plugin to .opb file
+    extract         Unbundle a .opb file
 
 Running opc without any arguments will print version info and exit.
 
@@ -71,7 +72,7 @@ See 'opc help <command>' for more information on a specific command.
                 RawCommand::Help => "Display additional information for specific commands.\nUsage: opc help [COMMAND]".to_string(),
                 RawCommand::Create => "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create [PLUGIN NAME] [-blank]".to_string(),
                 RawCommand::Extract => "Extract a .opb file to the corresponding source files.\nUsage: opc extract [FILE PATH]".to_string(),
-                RawCommand::Remove => "Remove a OUTLINE plugin at the given path. \nUsage: opc delete [PLUGIN PATH]".to_string()
+                RawCommand::Remove => "Remove an element from the plugin. \nUsage: opc remove [ELEMENT TPYE] [ELEMENT NAME]".to_string()
             }
         }
         Command::Version => {
