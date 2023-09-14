@@ -26,7 +26,7 @@ r#"class sampleWidget {
             // Called every time _widgetData changes
             // Use this to set all displays, eg. text elements
 
-            if (this._widgetData.count !== 0) {
+            if (this._widgetData.params.count !== 0) {
                 this.mainButton.textContent = `Clicked ${this._widgetData.params.count} times.`;
             }
         }
