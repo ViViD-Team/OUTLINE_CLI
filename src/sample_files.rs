@@ -27,7 +27,7 @@ r#"class sampleWidget {
             // Use this to set all displays, eg. text elements
 
             if (this._widgetData.count !== 0) {
-                this.mainButton.textContent = `Clicked ${this._widgetData.count} times.`;
+                this.mainButton.textContent = `Clicked ${this._widgetData.params.count} times.`;
             }
         }
 
@@ -39,7 +39,7 @@ r#"class sampleWidget {
         // Functions need to be defined outside of addEventListener.
         // Else "this" will not be the object, but the DOM node.
         let callback = () => {
-            this._widgetData.count++;
+            this._widgetData.params.count++;
             this.update();
         }
         this.mainButton.addEventListener("click", callback);
