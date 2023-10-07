@@ -29,7 +29,7 @@ macro_rules! name_is_conform {
         if $name.chars().next().unwrap().is_ascii_uppercase() {
             return "Please provide a name in lowerCamelCase".to_string()
         }
-        if $name.chars().position(|a| a == '_').unwrap_or(0) != 0 || $name.chars().position(|a| a == '_').unwrap_or($name.len() - 1) != $name.len() - 1 {
+        if $name.contains('_') || $name.contains('-') {
             return "Please provide a name in lowerCamelCase".to_string()
         }
     }
