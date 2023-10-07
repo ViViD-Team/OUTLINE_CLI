@@ -93,11 +93,11 @@ impl Command {
 
     pub fn build_create(args: &mut std::env::Args) -> Result<Command> {
 
-        let c: Command = {|| -> Result<Command> {build_element_with_name!(Add, args, Widget, Node)}}()?;
+        let name = args.next().ok_or(anyhow!("missing plugin name"))?;
+        let blank = args.next().unwrap_or_default() == "-blank";
 
-        if let Command::Create(b) = c.clone() {
-            if b.name.is_empty() {bail!("missing plugin name")}
-        }
+        let c = Command::Create(Create { name, blank });
+
         Ok(c)
     }
 
