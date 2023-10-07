@@ -329,7 +329,7 @@ pub struct Prototype {
     #[serde(rename = "simResizeY")]
     pub sim_resize_y: f64,
     #[serde(rename = "sizeBounds")]
-    pub size_bounds: Vec<f64>,
+    pub size_bounds: Vec<Vec<f64>>,
     pub params: Value,
 }
 
@@ -344,7 +344,7 @@ impl Default for Prototype {
             sim_y: 0.,
             sim_resize_x: 0.,
             sim_resize_y: 0.,
-            size_bounds: Vec::new(),
+            size_bounds: vec![vec![3., 30.], vec![3., 30.]],
             params: Value::Object(Map::new())
         }
     }
