@@ -24,6 +24,18 @@ pub fn set_settings(settings: &PluginJson) {
 }
 
 #[macro_export]
+macro_rules! name_is_conform {
+    ($name: ident) => {
+        if $name.chars().next().unwrap().is_ascii_uppercase() {
+            return "Please provide a name in lowerCamelCase".to_string()
+        }
+        if $name.chars().position(|a| a == '_').unwrap_or(0) != 0 || $name.chars().position(|a| a == '_').unwrap_or($name.len() - 1) != $name.len() - 1 {
+            return "Please provide a name in lowerCamelCase".to_string()
+        }
+    }
+}
+
+#[macro_export]
 macro_rules! inside_plugin {
     () => {
         if !std::path::Path::new("plugin.json").exists() {

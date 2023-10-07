@@ -62,10 +62,10 @@ macro_rules! build_element_with_name {
                 )*
                 bail!("invalid element type")
             } else {
-                bail!("missing element name");
+                bail!("missing argument");
             }
         } else {
-            bail!("missing element type");
+            bail!("missing argument");
         }
     }
 }
@@ -93,7 +93,7 @@ impl Command {
 
     pub fn build_create(args: &mut std::env::Args) -> Result<Command> {
 
-        let name = args.next().ok_or(anyhow!("missing plugin name"))?;
+        let name = args.next().ok_or(anyhow!("missing argument"))?;
         let blank = args.next().unwrap_or_default() == "-blank";
 
         let c = Command::Create(Create { name, blank });
@@ -103,23 +103,25 @@ impl Command {
 
     pub fn build_add(args: &mut std::env::Args) -> Result<Command> {
 
-        if let Some(elem_type) = args.next() {
-            if let Some(name) = args.next() {
-                match elem_type.as_str() {
-                    "widget" => {
-                        Ok(Command::Add(Element::Widget(name)))
-                    }
-                    "node" => {
-                        Ok(Command::Add(Element::Node(name)))
-                    }
-                    _ => {bail!("invalid element type")}
-                }
-            } else {
-                bail!("missing element name");
-            }
-        } else {
-            bail!("missing element type");
-        }
+        build_element_with_name!(Add, args, Widget, Node)
+
+        // if let Some(elem_type) = args.next() {
+        //     if let Some(name) = args.next() {
+        //         match elem_type.as_str() {
+        //             "widget" => {
+        //                 Ok(Command::Add(Element::Widget(name)))
+        //             }
+        //             "node" => {
+        //                 Ok(Command::Add(Element::Node(name)))
+        //             }
+        //             _ => {bail!("invalid element type")}
+        //         }
+        //     } else {
+        //         bail!("missing argument");
+        //     }
+        // } else {
+        //     bail!("missing argument");
+        // }
     }
 
     pub fn build_extract(args: &mut std::env::Args) -> Result<Command> {

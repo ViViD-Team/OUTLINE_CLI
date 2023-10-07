@@ -11,6 +11,7 @@ use opc::models::PluginJson;
 use opc::models::Prototype;
 use opc::models::RawCommand;
 use opc::models::Widget;
+use opc::name_is_conform;
 use opc::sample_files;
 use opc::inside_plugin;
 use opc::set_settings;
@@ -102,6 +103,8 @@ fn remove_element(elem: Element) -> String {
 fn create_plugin(name: &str) -> String {
 
     let name = name.to_string();
+
+    name_is_conform!(name);
     
     if Path::new(name.as_str()).exists() {
         return "Directory with the same name already exists!".to_string()
@@ -146,6 +149,8 @@ fn create_plugin_blank(name: &str) -> String {
 
     let name = name.to_string();
 
+    name_is_conform!(name);
+
     fs::create_dir(&name).expect("Error creating new directory");
 
     let settings: PluginJson = PluginJson {
@@ -164,6 +169,8 @@ fn create_plugin_blank(name: &str) -> String {
 pub fn add_widget(name: String) -> String {
 
     inside_plugin!(no_res);
+
+    name_is_conform!(name);
 
     if Path::new(&name).exists() {
         return "Widget with this ID already exists in this plugin!".to_string()
@@ -188,6 +195,8 @@ pub fn add_widget(name: String) -> String {
 pub fn add_node(name: String) -> String {
 
     inside_plugin!(no_res);
+
+    name_is_conform!(name);
 
     // Maybe rather check plugin.json?
     if Path::new(&(name.clone() + ".js")).exists() {
