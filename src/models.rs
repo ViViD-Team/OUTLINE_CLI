@@ -52,7 +52,7 @@ pub enum Command {
 }
 
 macro_rules! build_element_with_name {
-    ($cmd:ident, $args:expr, $($elem_type:ident),+) => {
+    ($cmd:ident, $args:ident, $($elem_type:ident),+) => {
         if let Some(elem_type) = $args.next() {
             if let Some(name) = $args.next() {
                 $(
@@ -86,7 +86,7 @@ impl Command {
 
     pub fn build_remove(args: &mut std::env::Args) -> Result<Command> {
 
-        inside_plugin!();
+        inside_plugin!(bail);
 
         build_element_with_name!(Remove, args, Widget, Node);
     } 
@@ -104,24 +104,6 @@ impl Command {
     pub fn build_add(args: &mut std::env::Args) -> Result<Command> {
 
         build_element_with_name!(Add, args, Widget, Node)
-
-        // if let Some(elem_type) = args.next() {
-        //     if let Some(name) = args.next() {
-        //         match elem_type.as_str() {
-        //             "widget" => {
-        //                 Ok(Command::Add(Element::Widget(name)))
-        //             }
-        //             "node" => {
-        //                 Ok(Command::Add(Element::Node(name)))
-        //             }
-        //             _ => {bail!("invalid element type")}
-        //         }
-        //     } else {
-        //         bail!("missing argument");
-        //     }
-        // } else {
-        //     bail!("missing argument");
-        // }
     }
 
     pub fn build_extract(args: &mut std::env::Args) -> Result<Command> {
@@ -155,18 +137,14 @@ pub struct Extract {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Opb {
-    #[serde(rename = "pluginName")]
     pub plugin_name: String,
     #[serde(rename = "pluginID")]
     pub plugin_id: String,
-    #[serde(rename = "pluginDescription")]
     pub plugin_description: String,
-    #[serde(rename = "pluginVersion")]
     pub plugin_version: String,
-    #[serde(rename = "pluginAuthor")]
     pub plugin_author: String,
-    #[serde(rename = "pluginCategoryLabel")]
     pub plugin_category_label: String,
     pub widgets: Vec<FullWidget>,
     pub nodes: Vec<FullNode>,
@@ -176,7 +154,7 @@ pub struct Opb {
 impl Opb {
     pub fn bundle() -> Result<Self> {
 
-        inside_plugin!();
+        inside_plugin!(bail);
 
         let settings = get_settings();
 
@@ -226,18 +204,14 @@ pub struct IconFileContents {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PluginJson {
-    #[serde(rename = "pluginName")]
     pub plugin_name: String,
     #[serde(rename = "pluginID")]
     pub plugin_id: String,
-    #[serde(rename = "pluginDescription")]
     pub plugin_description: String,
-    #[serde(rename = "pluginVersion")]
     pub plugin_version: String,
-    #[serde(rename = "pluginAuthor")]
     pub plugin_author: String,
-    #[serde(rename = "pluginCategoryLabel")]
     pub plugin_category_label: String,
     pub widgets: Vec<Widget>,
     pub nodes: Vec<Node>,
@@ -283,8 +257,8 @@ impl PluginJson {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Widget {
-    #[serde(rename = "widgetName")]
     pub widget_name: String,
     #[serde(rename = "widgetID")]
     pub widget_id: String,
@@ -292,13 +266,12 @@ pub struct Widget {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct FullWidget {
-    #[serde(rename = "widgetName")]
     pub widget_name: String,
     #[serde(rename = "widgetID")]
     pub widget_id: String,
     pub prototype: Prototype,
-    #[serde(rename = "fileContents")]
     pub file_contents: WidgetFiles
 }
 
@@ -311,24 +284,16 @@ pub struct WidgetFiles {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Prototype {
-    #[serde(rename = "posX")]
     pub pos_x: f64,
-    #[serde(rename = "posY")]
     pub pos_y: f64,
-    #[serde(rename = "sizeX")]
     pub size_x: f64,
-    #[serde(rename = "sizeY")]
     pub size_y: f64,
-    #[serde(rename = "simX")]
     pub sim_x: f64,
-    #[serde(rename = "simY")]
     pub sim_y: f64,
-    #[serde(rename = "simResizeX")]
     pub sim_resize_x: f64,
-    #[serde(rename = "simResizeY")]
     pub sim_resize_y: f64,
-    #[serde(rename = "sizeBounds")]
     pub size_bounds: Vec<Vec<f64>>,
     pub params: Value,
 }
@@ -351,20 +316,19 @@ impl Default for Prototype {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Node {
-    #[serde(rename = "nodeName")]
     pub node_name: String,
     #[serde(rename = "nodeID")]
     pub node_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct FullNode {
-    #[serde(rename = "nodeName")]
     pub node_name: String,
     #[serde(rename = "nodeID")]
     pub node_id: String,
-    #[serde(rename = "fileContents")]
     pub js: NodeFiles
 }
 

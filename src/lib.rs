@@ -26,10 +26,7 @@ pub fn set_settings(settings: &PluginJson) {
 #[macro_export]
 macro_rules! name_is_conform {
     ($name: ident) => {
-        if $name.chars().next().unwrap().is_ascii_uppercase() {
-            return "Please provide a name in lowerCamelCase".to_string()
-        }
-        if $name.contains('_') || $name.contains('-') {
+        if $name.chars().next().unwrap().is_ascii_uppercase() || $name.contains('_') || $name.contains('-') {
             return "Please provide a name in lowerCamelCase".to_string()
         }
     }
@@ -37,19 +34,14 @@ macro_rules! name_is_conform {
 
 #[macro_export]
 macro_rules! inside_plugin {
-    () => {
-        if !std::path::Path::new("plugin.json").exists() {
-            anyhow::bail!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
-        }
-    };
-    (no_res) => {
+    (return) => {
         if !std::path::Path::new("plugin.json").exists() {
             return "You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.".to_string()
         }
     };
-    (panic) => {
+    ($mac:ident) => {
         if !std::path::Path::new("plugin.json").exists() {
-            panic!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
+            $mac!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
         }
-    }
+    };
 }

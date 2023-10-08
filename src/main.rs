@@ -168,7 +168,7 @@ fn create_plugin_blank(name: &str) -> String {
 
 pub fn add_widget(name: String) -> String {
 
-    inside_plugin!(no_res);
+    inside_plugin!(return);
 
     name_is_conform!(name);
 
@@ -194,7 +194,7 @@ pub fn add_widget(name: String) -> String {
 
 pub fn add_node(name: String) -> String {
 
-    inside_plugin!(no_res);
+    inside_plugin!(return);
 
     name_is_conform!(name);
 
@@ -216,7 +216,7 @@ pub fn add_node(name: String) -> String {
 
 pub fn bundle() -> String {
 
-    inside_plugin!(no_res);
+    inside_plugin!(return);
 
     let settings: PluginJson = get_settings();
 
