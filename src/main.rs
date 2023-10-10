@@ -4,13 +4,10 @@ use std::path::Path;
 
 use opc::OpcCommand;
 use opc::get_settings;
-use opc::models::Command;
-use opc::models::Element;
 use opc::models::Node;
 use opc::models::Opb;
 use opc::models::PluginJson;
 use opc::models::Prototype;
-use opc::models::RawCommand;
 use opc::models::Widget;
 use opc::name_is_conform;
 use opc::sample_files;
@@ -44,7 +41,7 @@ fn main() {
         }
         
         fn help() -> String {
-            "no".to_string()
+            "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create `plugin_name` [-blank]".to_string()
         }
     }
 
@@ -62,7 +59,7 @@ fn main() {
         }
         
         fn help() -> String {
-            "no".to_string()
+            "Adds a new widget or node to the plugin.\nUsage: opc add `element_type` `element_name`".to_string()
         }
     }
 
@@ -80,7 +77,7 @@ fn main() {
         }
         
         fn help() -> String {
-            "no".to_string()
+            "Remove an element from the plugin. \nUsage: opc remove `element_type` `element_name`".to_string()
         }
     }
 
@@ -92,7 +89,7 @@ fn main() {
         }
         
         fn help() -> String {
-            "no".to_string()
+            "Bundles the plugin into a .opb file.\nUsage: opc bundle".to_string()
         }
     }
 
@@ -104,73 +101,11 @@ fn main() {
         }
 
         fn help() -> String {
-            "no".to_string()
+            "Extract a .opb file to the corresponding source files.\nUsage: opc extract `file_path`".to_string()
         }
     }
 
     serve_opc!(AddCommand ExtractCommand BundleCommand CreateCommand RemoveCommand);
-
-    // if let Ok(res) = CreateCommand::parse(args.clone()) {
-    //     println!("{}", res.run())
-    // } else if let Ok(res) = AddCommand::parse(args.clone()) {
-    //     println!("{}", res.run())
-    // } else if let Ok(res) = RemoveCommand::parse(args.clone()) {
-    //     println!("{}", res.run())
-    // } else if let Ok(res) = BundleCommand::parse(args.clone()) {
-    //     println!("{}", res.run())
-    // } else if let Ok(res) = ExtractCommand::parse(args.clone()) {
-    //     println!("{}", res.run())
-    // } else {
-    //     println!("Unknown command! Use 'opc help' for further information")
-    // }
-
-//     println!("{}", match command {
-//         Command::Create(c) => {
-//             if c.blank {
-//                 create_plugin_blank(&c.name)
-//             } else {
-//                 create_plugin(&c.name)
-//             }
-//         }
-//         Command::Add(c) => {
-//             match c {
-//                 Element::Node(name) => add_node(name),
-//                 Element::Widget(name) => add_widget(name),
-//             }
-//         },
-//         Command::Bundle => bundle(),
-//         Command::Extract(c) => extract_from(c.origin_path),
-//         Command::Remove(p) => remove_element(p), 
-//         Command::Help(c) => {
-//             match c {
-//                 RawCommand::Add => "Adds a new widget or node to the plugin.\nUsage: opc add [ELEMENT TPYE] [ELEMENT NAME]".to_string(),
-//                 RawCommand::Bundle => "Bundles the plugin into a .opb file.\nUsage: opc bundle".to_string(),
-//                 RawCommand::Version => "
-// OUTLINE's plugin creator
-
-// Usage: opc [COMMAND] [ARGUMENTS] [OPTIONS]
-
-// Commands:
-//     create          Create the basic filtree for a new outline plugin
-//     add             Add a new element to the plugin
-//     remove          Remove an element from the plugin
-//     bundle          Bundle the plugin to .opb file
-//     extract         Unbundle a .opb file
-
-// Running opc without any arguments will print version info and exit.
-
-// See 'opc help <command>' for more information on a specific command.
-//                             ".to_string(),
-//                 RawCommand::Help => "Display additional information for specific commands.\nUsage: opc help [COMMAND]".to_string(),
-//                 RawCommand::Create => "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create [PLUGIN NAME] [-blank]".to_string(),
-//                 RawCommand::Extract => "Extract a .opb file to the corresponding source files.\nUsage: opc extract [FILE PATH]".to_string(),
-//                 RawCommand::Remove => "Remove an element from the plugin. \nUsage: opc remove [ELEMENT TPYE] [ELEMENT NAME]".to_string()
-//             }
-//         }
-//         Command::Version => {
-//             format!("OUTLINE Plugin Creator {} installed", version)
-//         }
-//     })
 }
 
 fn remove_node(name: String) -> String {
