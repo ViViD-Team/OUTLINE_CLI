@@ -1,4 +1,5 @@
 use std::fs;
+use anyhow::Result;
 
 use models::PluginJson;
 
@@ -44,4 +45,13 @@ macro_rules! inside_plugin {
             $mac!("You are not currently editing a plugin! Use opc create to create a new plugin, then run this command from the plugin folder.")
         }
     };
+}
+
+pub trait OpcCommand {
+    fn run(&self) -> String;
+    fn help() -> String;
+}
+
+pub trait SuperOpcCommand: OpcCommand {
+    fn parse(args: Vec<String>) -> Result<Self> where Self: Sized;
 }

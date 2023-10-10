@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 
+use opc::OpcCommand;
 use opc::get_settings;
 use opc::models::Command;
 use opc::models::Element;
@@ -15,89 +16,177 @@ use opc::name_is_conform;
 use opc::sample_files;
 use opc::inside_plugin;
 use opc::set_settings;
+use opc_macros::{new_opc_command, serve_opc};
+use opc_macros;
+use opc::SuperOpcCommand;
+use anyhow::bail;
 
 fn main() {
 
     let version = "0.1";
 
     let mut args = env::args();
-
     args.next();
+    let args = args.collect::<Vec<String>>();
 
-    let command = Command::new(args);
+    if args.is_empty() {println!("OUTLINE Plugin Creator {} installed", version); return}
 
-    if let Err(e) = command {
-        println!("{}", e);
-        return;
+
+    new_opc_command!("create" name ["-" blank]);
+
+    impl OpcCommand for CreateCommand {
+        fn run(&self) -> String {
+            if self.blank {
+                create_plugin(&self.name)
+            } else {
+                create_plugin_blank(&self.name)
+            }
+        }
+        
+        fn help() -> String {
+            "no".to_string()
+        }
     }
 
-    let command = command.unwrap();
+    new_opc_command!("add" elem_type name);
 
-    println!("{}", match command {
-        Command::Create(c) => {
-            if c.blank {
-                create_plugin_blank(&c.name)
+    impl OpcCommand for AddCommand {
+        fn run(&self) -> String {
+            if self.elem_type == "node" {
+                add_node(self.name.clone())
+            } else if self.elem_type == "widget" {
+                add_widget(self.name.clone())
             } else {
-                create_plugin(&c.name)
+                "Invalid element type".to_string()
             }
         }
-        Command::Add(c) => {
-            match c {
-                Element::Node(name) => add_node(name),
-                Element::Widget(name) => add_widget(name),
-            }
-        },
-        Command::Bundle => bundle(),
-        Command::Extract(c) => extract_from(c.origin_path),
-        Command::Remove(p) => remove_element(p), 
-        Command::Help(c) => {
-            match c {
-                RawCommand::Add => "Adds a new widget or node to the plugin.\nUsage: opc add [ELEMENT TPYE] [ELEMENT NAME]".to_string(),
-                RawCommand::Bundle => "Bundles the plugin into a .opb file.\nUsage: opc bundle".to_string(),
-                RawCommand::Version => "
-OUTLINE's plugin creator
+        
+        fn help() -> String {
+            "no".to_string()
+        }
+    }
 
-Usage: opc [COMMAND] [ARGUMENTS] [OPTIONS]
+    new_opc_command!("remove" elem_type name);
 
-Commands:
-    create          Create the basic filtree for a new outline plugin
-    add             Add a new element to the plugin
-    remove          Remove an element from the plugin
-    bundle          Bundle the plugin to .opb file
-    extract         Unbundle a .opb file
-
-Running opc without any arguments will print version info and exit.
-
-See 'opc help <command>' for more information on a specific command.
-                            ".to_string(),
-                RawCommand::Help => "Display additional information for specific commands.\nUsage: opc help [COMMAND]".to_string(),
-                RawCommand::Create => "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create [PLUGIN NAME] [-blank]".to_string(),
-                RawCommand::Extract => "Extract a .opb file to the corresponding source files.\nUsage: opc extract [FILE PATH]".to_string(),
-                RawCommand::Remove => "Remove an element from the plugin. \nUsage: opc remove [ELEMENT TPYE] [ELEMENT NAME]".to_string()
+    impl OpcCommand for RemoveCommand {
+        fn run(&self) -> String {
+            if self.elem_type == "node" {
+                remove_node(self.name.clone())
+            } else if self.elem_type == "widget" {
+                remove_widget(self.name.clone())
+            } else {
+                "Invalid element type".to_string()
             }
         }
-        Command::Version => {
-            format!("OUTLINE Plugin Creator {} installed", version)
+        
+        fn help() -> String {
+            "no".to_string()
         }
-    })
+    }
+
+    new_opc_command!("bundle");
+
+    impl OpcCommand for BundleCommand {
+        fn run(&self) -> String {
+            bundle()
+        }
+        
+        fn help() -> String {
+            "no".to_string()
+        }
+    }
+
+    new_opc_command!("extract" file_path);
+
+    impl OpcCommand for ExtractCommand {
+        fn run(&self) -> String {
+            extract_from(self.file_path.clone())
+        }
+
+        fn help() -> String {
+            "no".to_string()
+        }
+    }
+
+    serve_opc!(AddCommand ExtractCommand BundleCommand CreateCommand RemoveCommand);
+
+    // if let Ok(res) = CreateCommand::parse(args.clone()) {
+    //     println!("{}", res.run())
+    // } else if let Ok(res) = AddCommand::parse(args.clone()) {
+    //     println!("{}", res.run())
+    // } else if let Ok(res) = RemoveCommand::parse(args.clone()) {
+    //     println!("{}", res.run())
+    // } else if let Ok(res) = BundleCommand::parse(args.clone()) {
+    //     println!("{}", res.run())
+    // } else if let Ok(res) = ExtractCommand::parse(args.clone()) {
+    //     println!("{}", res.run())
+    // } else {
+    //     println!("Unknown command! Use 'opc help' for further information")
+    // }
+
+//     println!("{}", match command {
+//         Command::Create(c) => {
+//             if c.blank {
+//                 create_plugin_blank(&c.name)
+//             } else {
+//                 create_plugin(&c.name)
+//             }
+//         }
+//         Command::Add(c) => {
+//             match c {
+//                 Element::Node(name) => add_node(name),
+//                 Element::Widget(name) => add_widget(name),
+//             }
+//         },
+//         Command::Bundle => bundle(),
+//         Command::Extract(c) => extract_from(c.origin_path),
+//         Command::Remove(p) => remove_element(p), 
+//         Command::Help(c) => {
+//             match c {
+//                 RawCommand::Add => "Adds a new widget or node to the plugin.\nUsage: opc add [ELEMENT TPYE] [ELEMENT NAME]".to_string(),
+//                 RawCommand::Bundle => "Bundles the plugin into a .opb file.\nUsage: opc bundle".to_string(),
+//                 RawCommand::Version => "
+// OUTLINE's plugin creator
+
+// Usage: opc [COMMAND] [ARGUMENTS] [OPTIONS]
+
+// Commands:
+//     create          Create the basic filtree for a new outline plugin
+//     add             Add a new element to the plugin
+//     remove          Remove an element from the plugin
+//     bundle          Bundle the plugin to .opb file
+//     extract         Unbundle a .opb file
+
+// Running opc without any arguments will print version info and exit.
+
+// See 'opc help <command>' for more information on a specific command.
+//                             ".to_string(),
+//                 RawCommand::Help => "Display additional information for specific commands.\nUsage: opc help [COMMAND]".to_string(),
+//                 RawCommand::Create => "Create a new OUTLINE plugin with the provided name.\nCalling with '-blank' omits sample data.\nUsage: opc create [PLUGIN NAME] [-blank]".to_string(),
+//                 RawCommand::Extract => "Extract a .opb file to the corresponding source files.\nUsage: opc extract [FILE PATH]".to_string(),
+//                 RawCommand::Remove => "Remove an element from the plugin. \nUsage: opc remove [ELEMENT TPYE] [ELEMENT NAME]".to_string()
+//             }
+//         }
+//         Command::Version => {
+//             format!("OUTLINE Plugin Creator {} installed", version)
+//         }
+//     })
 }
 
-fn remove_element(elem: Element) -> String {
+fn remove_node(name: String) -> String {
 
-    match elem {
-        Element::Node(name) => {
-            let mut settings = get_settings();
-            settings.remove_node(name.clone()).expect("Error removing Node");
-            fs::remove_file(name.clone() + ".js").expect("Node file not found, removed Node from plugin.json");
-            format!("Deleted Node {}", &name)
-        }
-        Element::Widget(name) => {
-            let mut settings = get_settings();
-            settings.remove_widget(name.clone()).expect("Error removing Widget");
-            fs::remove_dir_all(&name).expect("Widget directory not found, removed Widget from plugin.json");
-            format!("Deleted Widget {}", name)
-        }
-    }
+    let mut settings = get_settings();
+    settings.remove_node(name.clone()).expect("Error removing Node");
+    fs::remove_file(name.clone() + ".js").expect("Node file not found, removed Node from plugin.json");
+    format!("Deleted Node {}", &name)
+}
+
+fn remove_widget(name: String) -> String {
+
+    let mut settings = get_settings();
+    settings.remove_widget(name.clone()).expect("Error removing Widget");
+    fs::remove_dir_all(&name).expect("Widget directory not found, removed Widget from plugin.json");
+    format!("Deleted Widget {}", name)
 }
 
 fn create_plugin(name: &str) -> String {

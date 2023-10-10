@@ -10,3 +10,4 @@ anyhow = "1.0.75"
 paste = "1.0.14"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.106"
+opc_macros = { path = "../opc_macros" }
