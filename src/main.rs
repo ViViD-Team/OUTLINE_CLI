@@ -16,7 +16,6 @@ use opc::set_settings;
 use opc_macros::{new_opc_command, serve_opc};
 use opc_macros;
 use opc::SuperOpcCommand;
-use anyhow::bail;
 
 fn main() {
 
@@ -250,7 +249,7 @@ pub fn bundle() -> String {
         return format!("{}", e)
     }
 
-    fs::write("../".to_string() + &settings.plugin_id + ".opb", serde_json::to_string(&res.unwrap()).expect("Error serializing bundle")).expect("Error writing to file");
+    fs::write("../".to_string() + &settings.plugin_id + ".opb", serde_json::to_string_pretty(&res.unwrap()).expect("Error serializing bundle")).expect("Error writing to file");
 
     format!("Plugin bundled to {}.opb", settings.plugin_id)
 }

@@ -53,5 +53,5 @@ pub trait OpcCommand {
 }
 
 pub trait SuperOpcCommand: OpcCommand {
-    fn parse(args: Vec<String>) -> Result<Self> where Self: Sized;
+    fn parse(args: Vec<String>) -> Option<Result<Self>> where Self: Sized;
 }
