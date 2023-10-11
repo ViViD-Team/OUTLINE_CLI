@@ -121,8 +121,8 @@ impl Default for PluginJson {
                 prototype: Prototype::default()
             }],
             nodes: vec![Node {
-                node_name: "Test Node".to_string(),
-                node_id: "Test".to_string()
+                node_name: "Sample Node".to_string(),
+                node_id: "sampleNode".to_string()
             }]
         }
     }
