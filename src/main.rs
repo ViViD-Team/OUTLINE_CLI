@@ -32,11 +32,8 @@ fn main() {
 
     impl OpcCommand for CreateCommand {
         fn run(&self) -> String {
-            if self.blank {
-                create_plugin(&self.name)
-            } else {
-                create_plugin_blank(&self.name)
-            }
+            if self.blank {create_plugin_blank(&self.name)}
+            else {create_plugin(&self.name)}
         }
         
         fn help() -> String {
