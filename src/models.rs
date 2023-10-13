@@ -69,7 +69,7 @@ impl Opb {
             nodes.push(FullNode {
                 node_name: node.node_name,
                 node_id: node.node_id.clone(),
-                js: NodeFiles { js: read_to_string(node.node_id.clone() + ".js") }
+                file_contents: NodeFiles { js: read_to_string(node.node_id.clone() + ".js") }
             });
         }
 
@@ -218,7 +218,7 @@ pub struct FullNode {
     pub node_name: String,
     #[serde(rename = "nodeID")]
     pub node_id: String,
-    pub js: NodeFiles
+    pub file_contents: NodeFiles
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

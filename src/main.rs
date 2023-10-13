@@ -269,7 +269,7 @@ pub fn extract_from(origin_path: String) -> String {
     fs::write(plugin.plugin_id.clone() + "/icon.svg", opb.icon.svg).expect("Error writing to file");
 
     for node in opb.nodes {
-        fs::write(plugin.plugin_id.clone() + "/" + &node.node_id + ".js", node.js.js).expect("Error writing to file");
+        fs::write(plugin.plugin_id.clone() + "/" + &node.node_id + ".js", node.file_contents.js).expect("Error writing to file");
     }
 
     for widget in opb.widgets {
