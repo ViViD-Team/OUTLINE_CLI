@@ -21,13 +21,6 @@ fn main() {
 
     let version = "0.1";
 
-    let mut args = env::args();
-    args.next();
-    let args = args.collect::<Vec<String>>();
-
-    if args.is_empty() {println!("OUTLINE Plugin Creator {} installed", version); return}
-
-
     new_opc_command!("create" name ["-" blank]);
 
     impl OpcCommand for CreateCommand {
