@@ -19,7 +19,7 @@ use opc::SuperOpcCommand;
 
 fn main() {
 
-    let version = "0.1";
+    let version = "0.2";
 
     new_opc_command!("create" name ["-" blank]);
 
