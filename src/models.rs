@@ -174,6 +174,26 @@ pub struct WidgetFiles {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct ActionButtonColors {
+    pub top_left: String,
+    pub top_right: String,
+    pub bottom_left: String,
+    pub bottom_right: String
+}
+
+impl Default for ActionButtonColors {
+    fn default() -> Self {
+        ActionButtonColors {
+            top_left: "var(--red)".to_string(),
+            top_right: "var(--red)".to_string(),
+            bottom_left: "var(--red)".to_string(),
+            bottom_right: "var(--red)".to_string()
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Prototype {
     pub pos_x: f64,
     pub pos_y: f64,
@@ -184,6 +204,7 @@ pub struct Prototype {
     pub sim_resize_x: f64,
     pub sim_resize_y: f64,
     pub size_bounds: Vec<Vec<f64>>,
+    pub action_button_colors: ActionButtonColors,
     pub params: Value,
 }
 
@@ -199,6 +220,7 @@ impl Default for Prototype {
             sim_resize_x: 0.,
             sim_resize_y: 0.,
             size_bounds: vec![vec![3., 30.], vec![3., 30.]],
+            action_button_colors: ActionButtonColors::default(),
             params: Value::Object(Map::new())
         }
     }
