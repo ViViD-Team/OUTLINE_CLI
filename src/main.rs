@@ -127,7 +127,7 @@ fn create_plugin(name: &str) -> String {
     fs::create_dir(name.clone() + "/sampleWidget").expect("Error creating new directory");
 
     fs::write(name.clone() + "/icon.svg", sample_files::get_sample_icon_svg()).expect("Error creating new file");
-    fs::write(name.clone() + "/SampleNode.js", sample_files::get_sample_node_js(None)).expect("Error creating new file");
+    fs::write(name.clone() + "/SampleNode.js", sample_files::get_sample_node_js("sampleNode")).expect("Error creating new file");
 
     let path = name.clone() + "/sampleWidget";
 
@@ -216,7 +216,7 @@ pub fn add_node(name: String) -> String {
         return "Node with this ID already exists in this plugin!".to_string()
     }
 
-    fs::write(name.clone() + ".js", sample_files::get_sample_node_js(Some(name.clone()))).expect("Error creating new file");
+    fs::write(name.clone() + ".js", sample_files::get_sample_node_js(&name)).expect("Error creating new file");
 
     let mut settings: PluginJson = get_settings();
 
@@ -276,8 +276,6 @@ pub fn extract_from(origin_path: String) -> String {
 
     format!("Extracted plugin {}", opb.plugin_id)
 }
-
-
 
 fn split_l_camel_case(s: &str) -> String {
 
