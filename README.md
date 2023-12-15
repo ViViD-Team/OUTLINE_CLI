@@ -1,5 +1,8 @@
 # CLI for creating OUTLINE plugins
 
+## WARNING
+Whilst OPC's implementation roughly followed this README, most of the information regarding possible errors and other messages is not the same.
+
 ## Commands:
 
 ### opc
